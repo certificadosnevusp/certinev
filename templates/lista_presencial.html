@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CERTINEV - Lista de Presença</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .footer {
+            margin-top: 50px;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='certinev_logo.png') }}" alt="CERTINEV Logo" width="150" class="mb-3">
+            <h1 class="h3">Lista de Presença</h1>
+            <p class="lead">Evento: **{{ titulo_descricao }}**</p>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form id="presenceForm" action="{{ url_for('registra_presenca') }}" method="post">
+            <input type="hidden" name="titulo_descricao" value="{{ titulo_descricao }}">
+            <div class="mb-3">
+                <label for="nome_completo" class="form-label">Nome Completo</label>
+                <input type="text" class="form-control" id="nome_completo" name="nome_completo" required>
+            </div>
+            <div class="mb-3">
+                <label for="cpf" class="form-label">CPF (Somente números)</label>
+                <input type="text" class="form-control" id="cpf" name="cpf" required pattern="\d{11}" maxlength="11" onkeyup="checkCpf()">
+                <div id="cpfHelp" class="form-text">Digite o CPF sem pontos ou traços.</div>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="newsletter_opt_in" name="newsletter_opt_in">
+                <label class="form-check-label" for="newsletter_opt_in">
+                    Desejo receber novidades e informativos por e-mail.
+                </label>
+            </div>
+            <div id="loadingIndicator" style="display: none;" class="text-center mb-3">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div id="submitButtonDiv">
+                <button type="submit" class="btn btn-success w-100">Registrar Presença</button>
+            </div>
+        </form>
+    </div>
+    <div class="footer">
+        <p>Copyright © 2024 CERTINEV. Todos os direitos reservados.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function checkCpf() {
+            const cpfInput = document.getElementById('cpf');
+            const tituloDescricao = document.querySelector('input[name="titulo_descricao"]').value;
+            const cpf = cpfInput.value;
+            const form = document.getElementById('presenceForm');
+            const submitButtonDiv = document.getElementById('submitButtonDiv');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+
+            if (cpf.length === 11 && !isNaN(cpf)) {
+                loadingIndicator.style.display = 'block';
+                submitButtonDiv.style.display = 'none';
+
+                fetch('/verifica_cpf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `cpf=${cpf}&titulo_descricao=${tituloDescricao}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadingIndicator.style.display = 'none';
+                    if (data.exists) {
+                        alert('Este CPF já foi registrado para este evento.');
+                        submitButtonDiv.style.display = 'none';
+                    } else {
+                        submitButtonDiv.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    loadingIndicator.style.display = 'none';
+                    submitButtonDiv.style.display = 'block';
+                    alert('Erro ao verificar CPF. Tente novamente.');
+                });
+            } else {
+                submitButtonDiv.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

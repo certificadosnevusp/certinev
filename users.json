@@ -1,0 +1,7 @@
+{
+    "alfa": {
+        "password_hash": "pbkdf2:sha256:600000$s1o41FfB06Vf33V6$11e4881d77a06f3630f40d6c40a5a3a14e918c50d322c366e74659f71253a6e9",
+        "type": "alfa",
+        "requires_password_change": true
+    }
+}

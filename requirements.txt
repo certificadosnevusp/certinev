@@ -129,7 +129,7 @@ formulaic==1.1.0
 fqdn==1.5.1
 frozendict==2.4.4
 fsspec==2024.6.1
-GDAL==3.9.3
+GDAL==3.6.2
 Genshi==0.7.9
 geographiclib==2.0
 geopy==2.4.1
